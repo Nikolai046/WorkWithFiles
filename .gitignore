@@ -1,0 +1,93 @@
+## Общие настройки
+.vscode/
+*.code-workspace
+
+## Папки сборки
+bin/
+obj/
+
+## Папки зависимостей
+packages/
+*.nupkg
+*.snupkg
+# Если вы используете NuGet Package Restore, то можно игнорировать папку packages
+# /packages
+# Однако, если вы используете NuGet Package Restore, убедитесь, что файл .nuget/NuGet.Config включен в репозиторий.
+# .nuget/NuGet.Config
+
+## Папки тестов
+TestResults/
+*.TestResults/
+
+## Файлы пользовательских настроек Visual Studio
+.vs/
+.vscode/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+## Файлы логов и временные файлы
+*.log
+*.tlog
+*.ide.log
+
+## Файлы конфигурации и кеша
+*.cache
+*.config
+
+## Файлы для управления версиями
+*.vspscc
+*.vssscc
+
+## Файлы временных данных и резервных копий
+*_i.c
+*_p.c
+*_i.h
+*_p.h
+*.ilk
+*.meta
+*.tmp
+*.temp
+*.tmp_proj
+*.log
+*.vspscc
+*.vssscc
+
+## Файлы сборки и отладки
+*.builds
+*.pidb
+*.suo
+*.sln.docstates
+
+## Файлы для Rider (JetBrains)
+.idea/
+*.sln.iml
+
+## Файлы для Windows Forms Designer
+Form1.Designer.cs
+
+## Файлы для ASP.NET MVC/ASP.NET Core MVC
+project.lock.json
+project.fragment.lock.json
+
+## Файлы для Entity Framework Core Migrations
+Migrations/
+
+## Файлы для Azure Functions и WebJobs
+.local.settings.json
+
+# Конфигурационные файлы для Docker и Kubernetes (если используются)
+docker-compose.override.yml
+.dockerignore
+
+# Конфигурационные файлы для NPM (если используются)
+node_modules/
+npm-debug.log
+
+# Конфигурационные файлы для Yarn (если используются)
+.yarn/
+.yarnrc.yml
+
+# Конфигурационные файлы для других инструментов и IDE (например, Resharper)
+_ReSharper.Caches/
