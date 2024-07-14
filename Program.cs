@@ -13,6 +13,7 @@ namespace WorkWithFiles
         {
             List<DirectoryState> history = new List<DirectoryState> { new DirectoryState(Directory.GetCurrentDirectory(), 0, 0) };
             int historyIndex = 0;
+            DirectoryDrawer directoryDrawer = new DirectoryDrawer(maxDisplayLines);
 
             while (true)
             {
@@ -20,6 +21,7 @@ namespace WorkWithFiles
                 string currentPath = currentState.Path;
                 int selectedIndex = currentState.SelectedIndex;
                 int scrollOffset = currentState.ScrollOffset;
+
 
                 if (!currentState.SizeCalculated)
                 {
@@ -62,8 +64,7 @@ namespace WorkWithFiles
                 {
                     if (needRedraw)
                     {
-
-                        DirDrawInterface(currentPath, directories, selectedIndex, scrollOffset, currentState.DirSize);
+                        directoryDrawer.DrawInterface(currentPath, directories, selectedIndex, scrollOffset, currentState.DirSize);
                         needRedraw = false;
                     }
 
@@ -145,55 +146,6 @@ namespace WorkWithFiles
                 continue;
             }
         }
-
-        static void DirDrawInterface(string currentPath, string[] directories, int selectedIndex, int scrollOffset, string dirsize)
-        {
-
-            int startIndex = Math.Max(0, Math.Min(scrollOffset, directories.Length - maxDisplayLines));
-            int endIndex = Math.Min(startIndex + maxDisplayLines, directories.Length);
-            Console.Clear();
-            Console.WriteLine("Используйте стрелки для навигации, Enter для входа в папку, Backspace для возврата, Esc для выхода");
-            Console.WriteLine();
-            if (startIndex > 0) Console.WriteLine("^"); else Console.WriteLine();
-
-
-            for (int i = startIndex; i < endIndex; i++)
-            {
-                if (i == selectedIndex)
-                {
-                    Console.BackgroundColor = ConsoleColor.Gray;
-                    Console.ForegroundColor = ConsoleColor.Black;
-                }
-
-                Console.WriteLine(Path.GetFileName(directories[i]));
-
-                Console.ResetColor();
-            }
-
-            if (maxDisplayLines > endIndex)
-
-                for (int i = 0; i < maxDisplayLines - endIndex + 1; i++)
-                {
-                    Console.WriteLine();
-                }
-
-            if (endIndex < directories.Length) Console.WriteLine("v");
-            Console.Write($"\nТекущая директория: ");
-            Console.BackgroundColor = ConsoleColor.Gray;
-            Console.ForegroundColor = ConsoleColor.Black;
-            Console.WriteLine($"{currentPath}");
-            Console.ResetColor();
-
-            Console.WriteLine(dirsize);
-            Console.BackgroundColor = ConsoleColor.Gray;
-            Console.ForegroundColor = ConsoleColor.Black;
-            Console.WriteLine("Нажми F1 для перехода к файлам");
-            Console.ResetColor();
-
-
-
-
-        }
-
+      
     }
 }
