@@ -1,75 +1,70 @@
-﻿using System;
-using System.IO;
-using System.Collections.Generic;
-
-namespace WorkWithFiles
+﻿namespace WorkWithFiles
 {
-
-    class Program
+    internal class Program
     {
-        const int maxDisplayLines = 20;
+        private const int MaxDisplayLines = 20;
+        private const int MaxHistorySize = 2;
+        private static DirectoryState[] history = new DirectoryState[MaxHistorySize];
+        private static int historyIndex = -1;
 
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
-            List<DirectoryState> history = new List<DirectoryState> { new DirectoryState(Directory.GetCurrentDirectory(), 0, 0) };
-            int historyIndex = 0;
-            DirectoryDrawer directoryDrawer = new DirectoryDrawer(maxDisplayLines);
+            string currentPath = @".";
+
+            DirectoryDrawer drawer = new DirectoryDrawer(MaxDisplayLines);
+            DirectoryState currentState = new(currentPath, 0, 0);
+            bool needSizeCalculated = true;
+            int selectedIndex = 0;
+            int scrollOffset = 0;
+            string dirSize = "";
 
             while (true)
             {
-                DirectoryState currentState = history[historyIndex];
-                string currentPath = currentState.Path;
-                int selectedIndex = currentState.SelectedIndex;
-                int scrollOffset = currentState.ScrollOffset;
-
-
-                if (!currentState.SizeCalculated)
-                {
-                    try
-                    {
-
-                        currentState.DirSize = ($"Размер: {new CalculateDirectorySize(currentPath).DirSize} байт");
-                        currentState.SizeCalculated = true;
-                    }
-                    catch (Exception ex)
-                    {
-                        currentState.DirSize = "Размер невозможно посчитать, т.к. нет доступа к одной из директорий";
-                    }
-                }
-
-
                 string[] directories;
                 try
                 {
                     directories = Directory.GetDirectories(currentPath);
                 }
-                catch (UnauthorizedAccessException)
-                {
-                    Console.WriteLine("Нет доступа к этой директории. Нажмите любую клавишу для возврата.");
-                    Console.ReadKey(true);
-                    if (historyIndex > 0) historyIndex--;
-                    continue;
-                }
                 catch (Exception e)
                 {
-                    Console.WriteLine($"Ошибка: {e.Message}. Нажмите любую клавишу для возврата.");
-                    Console.ReadKey(true);
-                    if (historyIndex > 0) historyIndex--;
+                    Console.WriteLine($"Ошибка: {e.Message}");
+
+                    if (historyIndex >= 0)
+                    {
+                        historyIndex--;
+                        currentPath = Directory.GetParent(currentPath)?.FullName ?? currentPath;
+                    }
+                    else
+                    {
+                        currentPath = Directory.GetParent(currentPath)?.FullName ?? currentPath;
+                    }
+                    Console.ReadKey();
+
                     continue;
                 }
 
                 bool needRedraw = true;
-
                 while (true)
                 {
+                    if (needSizeCalculated)
+                    {
+                        try
+                        {
+                            dirSize = ($"Размер: {new CalculateDirectorySize(currentPath).DirSize} байт");
+                            needSizeCalculated = false;
+                        }
+                        catch (Exception ex)
+                        {
+                            dirSize = "Размер невозможно посчитать, т.к. нет доступа к одной из директорий";
+                        }
+                    }
                     if (needRedraw)
                     {
-                        directoryDrawer.DrawInterface(currentPath, directories, selectedIndex, scrollOffset, currentState.DirSize);
+                        drawer.DrawInterface(currentPath, directories, selectedIndex, scrollOffset, dirSize);
                         needRedraw = false;
                     }
 
                     ConsoleKeyInfo key = Console.ReadKey(true);
-
                     switch (key.Key)
                     {
                         case ConsoleKey.UpArrow:
@@ -86,8 +81,8 @@ namespace WorkWithFiles
                             if (selectedIndex < directories.Length - 1)
                             {
                                 selectedIndex++;
-                                if (selectedIndex >= scrollOffset + maxDisplayLines)
-                                    scrollOffset = selectedIndex - maxDisplayLines + 1;
+                                if (selectedIndex >= scrollOffset + MaxDisplayLines)
+                                    scrollOffset = selectedIndex - MaxDisplayLines + 1;
                                 needRedraw = true;
                             }
                             break;
@@ -96,56 +91,66 @@ namespace WorkWithFiles
                             if (directories.Length > 0)
                             {
                                 string newPath = directories[selectedIndex];
+                                if (historyIndex >= MaxHistorySize)
+                                {
+                                    Array.Copy(history, 1, history, 0, MaxHistorySize - 1);
+                                    historyIndex = MaxHistorySize - 1;
+                                }
+                                if (historyIndex >= 0)
+                                {
+                                    history[historyIndex] = new DirectoryState(currentPath, selectedIndex, scrollOffset);
+                                }
+                                currentPath = newPath;
+                                selectedIndex = 0;
+                                scrollOffset = 0;
+                                needSizeCalculated = true;
                                 historyIndex++;
-                                if (historyIndex < history.Count)
-                                {
-                                    history[historyIndex] = new DirectoryState(newPath, 0, 0);
-                                    history.RemoveRange(historyIndex + 1, history.Count - historyIndex - 1);
-                                }
-                                else
-                                {
-                                    history.Add(new DirectoryState(newPath, 0, 0));
-                                }
-                                currentState.SelectedIndex = selectedIndex;
-                                currentState.ScrollOffset = scrollOffset;
+
                                 goto Exit;
                             }
                             break;
 
                         case ConsoleKey.Backspace:
-                            if (historyIndex > 0)
+                            if (historyIndex >= 0)
                             {
                                 historyIndex--;
+                                if (historyIndex >= 0)
+                                {
+                                    DirectoryState prevState = history[historyIndex];
+                                    currentPath = prevState.Path;
+                                    selectedIndex = prevState.SelectedIndex;
+                                    scrollOffset = prevState.ScrollOffset;
+                                }
+                                else
+                                {
+                                    currentPath = Directory.GetParent(currentPath)?.FullName ?? currentPath;
+
+                                    scrollOffset = 0;
+                                }
+                                needSizeCalculated = true;
                                 goto Exit;
                             }
-                            else if (historyIndex == 0 && currentState.Path != Directory.GetDirectoryRoot(currentState.Path))
+                            else
                             {
-                                if (Directory.GetParent(currentState.Path) != null)
-                                {
-                                    currentState.Path = Directory.GetParent(currentState.Path).FullName;
-                                    currentState.SelectedIndex = 0;
-                                    currentState.ScrollOffset = 0;
-                                    goto Exit;
-                                }
+                                currentPath = Directory.GetParent(currentPath)?.FullName ?? currentPath;
+                                selectedIndex = 0;
+                                scrollOffset = 0;
                             }
-                            break;
+                            needSizeCalculated = true;
+                            goto Exit;
 
                         case ConsoleKey.Escape:
                             return;
 
                         case ConsoleKey.F1:
-                            ShowFiles showFiles = new ShowFiles(currentState.Path);
+                            ShowFiles showFiles = new ShowFiles(currentPath);
                             goto Exit;
                     }
-
-                    currentState.SelectedIndex = selectedIndex;
-                    currentState.ScrollOffset = scrollOffset;
                 }
 
             Exit:
                 continue;
             }
         }
-      
     }
 }
