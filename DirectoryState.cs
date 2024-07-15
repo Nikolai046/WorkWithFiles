@@ -1,6 +1,6 @@
 ﻿namespace WorkWithFiles
 {
-    class DirectoryState
+    internal class DirectoryState
     {
         public string Path { get; set; }
         public int SelectedIndex { get; set; }

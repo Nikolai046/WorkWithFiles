@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace WorkWithFiles
+﻿namespace WorkWithFiles
 {
-    class DirectoryDrawer
+    internal class DirectoryDrawer
     {
         public int MaxDisplayLines { get; set; }
 
