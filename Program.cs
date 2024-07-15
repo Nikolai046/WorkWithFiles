@@ -56,6 +56,7 @@
                         catch (Exception ex)
                         {
                             dirSize = "Размер невозможно посчитать, т.к. нет доступа к одному из элементов";
+                            needSizeCalculated = false;
                         }
                     }
                     if (needRedraw)
@@ -96,22 +97,28 @@
                                     Array.Copy(history, 1, history, 0, MaxHistorySize - 1);
                                     historyIndex = MaxHistorySize - 1;
                                 }
+                                if (historyIndex < 0) { selectedIndex = 0; historyIndex++; }
                                 if (historyIndex >= 0)
                                 {
                                     history[historyIndex] = new DirectoryState(currentPath, selectedIndex, scrollOffset);
+                                    
                                 }
+                                
                                 currentPath = newPath;
-                                selectedIndex = 0;
-                                scrollOffset = 0;
-                                needSizeCalculated = true;
-                                historyIndex++;
-
+                                if (dirSize != "Размер невозможно посчитать, т.к. нет доступа к одному из элементов")
+                                {
+                                   // selectedIndex = 0;
+                                    scrollOffset = 0;
+                                    needSizeCalculated = true;
+                                    historyIndex++;
+                                }
+                                else historyIndex++;
                                 goto Exit;
                             }
                             break;
 
                         case ConsoleKey.Backspace:
-                            if (historyIndex >= 0)
+                           if (historyIndex >= 0)
                             {
                                 historyIndex--;
                                 if (historyIndex >= 0)

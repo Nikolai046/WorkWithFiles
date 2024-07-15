@@ -16,7 +16,9 @@ namespace WorkWithFiles
         private const int FilesPerPage = 60;
         protected readonly string dirSize;
         protected long selectedDirSize = 0;
-        protected int countselected=0;
+        protected int countselected = 0;
+        protected bool isSelected;
+
         public ShowFiles(string currentDir, string dirSize)
         {
             files = new DirectoryInfo(currentDir).GetFiles();
@@ -29,23 +31,35 @@ namespace WorkWithFiles
             }
             Console.Clear();
             DisplayFiles();
-            
         }
+
+        public void UnSelectFiles()
+        {
+            for (int i = 0; i < files.Length; i++)
+            {
+                showFiles[i, 1] = "false";
+            }
+            countselected = 0;
+            selectedDirSize = 0;
+            isSelected = false;
+        }
+
         private void SelectFiles()
         {
             for (int i = 0; i < files.Length; i++)
             {
                 showFiles[i, 0] = files[i].Name;
-                if (DateTime.Now - files[i].LastAccessTime > TimeSpan.FromMinutes(30)) // если файл не использовался более 30 минут 
-                { showFiles[i, 1] = "true";
+                if (DateTime.Now - files[i].LastAccessTime > TimeSpan.FromMinutes(30))
+                {
+                    showFiles[i, 1] = "true";
                     countselected++;
                     selectedDirSize += files[i].Length;
-                 }
+                }
                 else
                     showFiles[i, 1] = "false";
             }
-
         }
+
         public void DisplayFiles()
         {
             int pageCount = (showFiles.GetLength(0) + FilesPerPage - 1) / FilesPerPage;
@@ -56,8 +70,7 @@ namespace WorkWithFiles
                 Console.Clear();
                 DisplayPage(showFiles, currentPage);
                 currentPage = GetNextPage(currentPage, pageCount);
-                
-                 }
+            }
         }
 
         public void DisplayPage(string[,] showFiles, int page)
@@ -80,7 +93,11 @@ namespace WorkWithFiles
                 {
                     Console.WriteLine();
                 }
-            Console.WriteLine($"Директория содерит {showFiles.GetLength(0)} файлов. {dirSize}");
+            Console.WriteLine($"Директория содержит {showFiles.GetLength(0)} файлов. {dirSize}");
+            if (isSelected)
+            {
+                Console.WriteLine($"Выделено {countselected} файлов. Размер выделенных файлов: {FormatFileSize(selectedDirSize)}");
+            }
             Console.WriteLine($"\nСтраница {page + 1} из {(showFiles.GetLength(0) + FilesPerPage - 1) / FilesPerPage}");
             Console.WriteLine("Используйте стрелки для навигации, Backspace для возврата");
             Console.BackgroundColor = ConsoleColor.Gray;
@@ -93,16 +110,28 @@ namespace WorkWithFiles
         {
             if (index < showFiles.GetLength(0))
             {
-                string fileName = showFiles[index,0];
+                string fileName = showFiles[index, 0];
+                bool isSelected = showFiles[index, 1] == "true";
+
                 if (fileName.Length > MaxFileNameLength)
                 {
                     fileName = fileName.Substring(0, MaxFileNameLength - 1) + "~";
-
                 }
-                return fileName.PadRight(ColumnWidth);
+
+                string formattedName = fileName.PadRight(ColumnWidth);
+
+                if (isSelected)
+                {
+                    return $"\u001b[47m\u001b[30m{formattedName}\u001b[0m"; // Белый фон, черный текст
+                }
+                else
+                {
+                    return formattedName;
+                }
             }
             return new string(' ', ColumnWidth);
         }
+
         private int GetNextPage(int currentPage, int pageCount)
         {
             while (true)
@@ -114,18 +143,30 @@ namespace WorkWithFiles
                         return (currentPage + 1) % pageCount;
 
                     case ConsoleKey.UpArrow:
-                        return (currentPage==0)? pageCount-1 : (currentPage - 1) % pageCount;
+                        return (currentPage == 0) ? pageCount - 1 : (currentPage - 1) % pageCount;
 
                     case ConsoleKey.Backspace:
                         return pageCount;
-                        /*
-                    case ConsoleKey.F10:
-                        код для вызова метода выбора файлов которые не использовались более 30 минут*/
-                }
 
+                    case ConsoleKey.F10:
+                        SelectFiles();
+                        isSelected = true;
+                        return currentPage; // Остаемся на текущей странице после выделения
+                }
             }
         }
 
-
+        private string FormatFileSize(long bytes)
+        {
+            string[] suffixes = { "B", "KB", "MB", "GB", "TB" };
+            int counter = 0;
+            decimal number = (decimal)bytes;
+            while (Math.Round(number / 1024) >= 1)
+            {
+                number /= 1024;
+                counter++;
+            }
+            return string.Format("{0:n1}{1}", number, suffixes[counter]);
+        }
     }
 }
