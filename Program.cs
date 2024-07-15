@@ -9,7 +9,7 @@
 
         private static void Main(string[] args)
         {
-            string currentPath = @".";
+            string currentPath = $"{Directory.GetCurrentDirectory()}";
 
             DirectoryDrawer drawer = new DirectoryDrawer(MaxDisplayLines);
             DirectoryState currentState = new(currentPath, 0, 0);
@@ -50,12 +50,12 @@
                     {
                         try
                         {
-                            dirSize = ($"Размер: {new CalculateDirectorySize(currentPath).DirSize} байт");
+                            dirSize = ($"Общий размер: {new CalculateDirectorySize(currentPath).DirSize} байт");
                             needSizeCalculated = false;
                         }
                         catch (Exception ex)
                         {
-                            dirSize = "Размер невозможно посчитать, т.к. нет доступа к одной из директорий";
+                            dirSize = "Размер невозможно посчитать, т.к. нет доступа к одному из элементов";
                         }
                     }
                     if (needRedraw)
@@ -143,7 +143,7 @@
                             return;
 
                         case ConsoleKey.F1:
-                            ShowFiles showFiles = new ShowFiles(currentPath);
+                            ShowFiles showFiles = new ShowFiles(currentPath, dirSize);
                             goto Exit;
                     }
                 }
