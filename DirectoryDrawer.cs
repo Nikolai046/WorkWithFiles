@@ -1,8 +1,8 @@
 ﻿namespace WorkWithFiles
 {
-    internal class DirectoryDrawer
+    class DirectoryDrawer
     {
-        public int MaxDisplayLines { get; set; }
+        private int MaxDisplayLines { get; set; }
 
         public DirectoryDrawer(int maxDisplayLines)
         {
@@ -26,7 +26,8 @@
                     Console.ForegroundColor = ConsoleColor.Black;
                 }
 
-                Console.WriteLine(Path.GetFileName(directories[i]));
+                //Console.WriteLine(Path.GetFileName(directories[i]));
+                Console.WriteLine($"{directories[i].Substring(currentPath.Length)}");
 
                 Console.ResetColor();
             }
@@ -39,16 +40,12 @@
 
             if (endIndex < directories.Length) Console.WriteLine("v");
             Console.Write($"\nТекущая директория: ");
-            Console.BackgroundColor = ConsoleColor.Gray;
-            Console.ForegroundColor = ConsoleColor.Black;
-            Console.WriteLine($"{currentPath}");
-            Console.ResetColor();
+
+            Console.WriteLine($"\u001b[47m\u001b[30m{currentPath}\u001b[0m");
 
             Console.WriteLine(dirsize);
-            Console.BackgroundColor = ConsoleColor.Gray;
-            Console.ForegroundColor = ConsoleColor.Black;
-            Console.WriteLine("Нажми F1 для перехода к файлам");
-            Console.ResetColor();
+
+            Console.WriteLine("\u001b[47m\u001b[30mНажми F1 для перехода к файлам\u001b[0m");
         }
     }
 }

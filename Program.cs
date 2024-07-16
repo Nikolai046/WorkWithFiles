@@ -15,8 +15,10 @@
             DirectoryState currentState = new(currentPath, 0, 0);
             bool needSizeCalculated = true;
             int selectedIndex = 0;
+            int previosIndex = 0;
             int scrollOffset = 0;
             string dirSize = "";
+            bool backward = false;
 
             while (true)
             {
@@ -57,6 +59,7 @@
                         {
                             dirSize = "Размер невозможно посчитать, т.к. нет доступа к одному из элементов";
                             needSizeCalculated = false;
+                            if (!backward) selectedIndex = previosIndex;
                         }
                     }
                     if (needRedraw)
@@ -97,28 +100,28 @@
                                     Array.Copy(history, 1, history, 0, MaxHistorySize - 1);
                                     historyIndex = MaxHistorySize - 1;
                                 }
-                                if (historyIndex < 0) { selectedIndex = 0; historyIndex++; }
                                 if (historyIndex >= 0)
                                 {
                                     history[historyIndex] = new DirectoryState(currentPath, selectedIndex, scrollOffset);
-                                    
                                 }
-                                
-                                currentPath = newPath;
-                                if (dirSize != "Размер невозможно посчитать, т.к. нет доступа к одному из элементов")
+                                if (historyIndex < 0)
                                 {
-                                   // selectedIndex = 0;
-                                    scrollOffset = 0;
-                                    needSizeCalculated = true;
                                     historyIndex++;
+                                    history[0] = new DirectoryState(currentPath, selectedIndex, scrollOffset);
                                 }
-                                else historyIndex++;
+                                currentPath = newPath;
+                                previosIndex = selectedIndex;
+                                selectedIndex = 0;
+                                scrollOffset = 0;
+                                needSizeCalculated = true;
+                                historyIndex++;
+
                                 goto Exit;
                             }
                             break;
 
                         case ConsoleKey.Backspace:
-                           if (historyIndex >= 0)
+                            if (historyIndex >= 0)
                             {
                                 historyIndex--;
                                 if (historyIndex >= 0)
@@ -131,10 +134,11 @@
                                 else
                                 {
                                     currentPath = Directory.GetParent(currentPath)?.FullName ?? currentPath;
-
+                                    selectedIndex = 0;
                                     scrollOffset = 0;
                                 }
                                 needSizeCalculated = true;
+                                backward = true;
                                 goto Exit;
                             }
                             else
