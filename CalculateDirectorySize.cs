@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace WorkWithFiles
+﻿namespace WorkWithFiles
 {
     class CalculateDirectorySize
     {
@@ -34,4 +28,3 @@ namespace WorkWithFiles
         }
     }
 }
-

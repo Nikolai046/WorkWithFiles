@@ -15,8 +15,10 @@
             DirectoryState currentState = new(currentPath, 0, 0);
             bool needSizeCalculated = true;
             int selectedIndex = 0;
+            int previosIndex = 0;
             int scrollOffset = 0;
             string dirSize = "";
+            bool backward = false;
 
             while (true)
             {
@@ -56,6 +58,8 @@
                         catch (Exception ex)
                         {
                             dirSize = "Размер невозможно посчитать, т.к. нет доступа к одному из элементов";
+                            needSizeCalculated = false;
+                            if (!backward) selectedIndex = previosIndex;
                         }
                     }
                     if (needRedraw)
@@ -100,7 +104,13 @@
                                 {
                                     history[historyIndex] = new DirectoryState(currentPath, selectedIndex, scrollOffset);
                                 }
+                                if (historyIndex < 0)
+                                {
+                                    historyIndex++;
+                                    history[0] = new DirectoryState(currentPath, selectedIndex, scrollOffset);
+                                }
                                 currentPath = newPath;
+                                previosIndex = selectedIndex;
                                 selectedIndex = 0;
                                 scrollOffset = 0;
                                 needSizeCalculated = true;
@@ -124,10 +134,11 @@
                                 else
                                 {
                                     currentPath = Directory.GetParent(currentPath)?.FullName ?? currentPath;
-
+                                    selectedIndex = 0;
                                     scrollOffset = 0;
                                 }
                                 needSizeCalculated = true;
+                                backward = true;
                                 goto Exit;
                             }
                             else
