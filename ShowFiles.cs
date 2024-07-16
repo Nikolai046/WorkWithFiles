@@ -1,13 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace WorkWithFiles
+﻿namespace WorkWithFiles
 {
-    public class ShowFiles
+    class ShowFiles
     {
         protected FileInfo[] files;
         protected string[,] showFiles;
@@ -17,7 +10,7 @@ namespace WorkWithFiles
         protected readonly string dirSize;
         protected long selectedDirSize = 0;
         protected int countselected = 0;
-        protected bool isSelected;
+        protected bool isSelected = false;
 
         public ShowFiles(string currentDir, string dirSize)
         {
@@ -33,7 +26,25 @@ namespace WorkWithFiles
             DisplayFiles();
         }
 
-        public void UnSelectFiles()
+        private void SelectFiles()
+        {
+            for (int i = 0; i < files.Length; i++)
+            {
+                showFiles[i, 0] = files[i].Name;
+                if (DateTime.Now - files[i].LastAccessTime > TimeSpan.FromMinutes(30)) // если файл не использовался более 30 минут
+                {
+                    showFiles[i, 1] = "true";
+                    countselected++;
+                    selectedDirSize += files[i].Length;
+                }
+                else
+                    showFiles[i, 1] = "false";
+            }
+
+            isSelected = true;
+        }
+
+        private void UnSelectFiles()
         {
             for (int i = 0; i < files.Length; i++)
             {
@@ -44,23 +55,7 @@ namespace WorkWithFiles
             isSelected = false;
         }
 
-        private void SelectFiles()
-        {
-            for (int i = 0; i < files.Length; i++)
-            {
-                showFiles[i, 0] = files[i].Name;
-                if (DateTime.Now - files[i].LastAccessTime > TimeSpan.FromMinutes(30))
-                {
-                    showFiles[i, 1] = "true";
-                    countselected++;
-                    selectedDirSize += files[i].Length;
-                }
-                else
-                    showFiles[i, 1] = "false";
-            }
-        }
-
-        public void DisplayFiles()
+        private void DisplayFiles()
         {
             int pageCount = (showFiles.GetLength(0) + FilesPerPage - 1) / FilesPerPage;
             int currentPage = 0;
@@ -71,9 +66,10 @@ namespace WorkWithFiles
                 DisplayPage(showFiles, currentPage);
                 currentPage = GetNextPage(currentPage, pageCount);
             }
+            isSelected = false;
         }
 
-        public void DisplayPage(string[,] showFiles, int page)
+        private void DisplayPage(string[,] showFiles, int page)
         {
             int startIndex = page * FilesPerPage;
             int endIndex = Math.Min(startIndex + FilesPerPage, showFiles.GetLength(0));
@@ -93,17 +89,19 @@ namespace WorkWithFiles
                 {
                     Console.WriteLine();
                 }
-            Console.WriteLine($"Директория содержит {showFiles.GetLength(0)} файлов. {dirSize}");
+            Console.WriteLine($"Директория содерит {showFiles.GetLength(0)} файлов. {dirSize}");
             if (isSelected)
             {
-                Console.WriteLine($"Выделено {countselected} файлов. Размер выделенных файлов: {FormatFileSize(selectedDirSize)}");
+                Console.WriteLine($"Выбрано: {countselected} файлов объемом {selectedDirSize} байт");
             }
-            Console.WriteLine($"\nСтраница {page + 1} из {(showFiles.GetLength(0) + FilesPerPage - 1) / FilesPerPage}");
+            else
+            {
+                Console.WriteLine();
+            }
+            Console.WriteLine($"Страница {page + 1} из {(showFiles.GetLength(0) + FilesPerPage - 1) / FilesPerPage}");
             Console.WriteLine("Используйте стрелки для навигации, Backspace для возврата");
-            Console.BackgroundColor = ConsoleColor.Gray;
-            Console.ForegroundColor = ConsoleColor.Black;
-            Console.WriteLine("Нажми F10 для выделения файлов, которые не использовались более 30 минут");
-            Console.ResetColor();
+
+            Console.WriteLine("\u001b[47m\u001b[30mF10 - выделить/снять выделение, файлы которые не использовались более 30 минут\u001b[0m");
         }
 
         private string GetFormattedFileName(string[,] showFiles, int index)
@@ -149,22 +147,10 @@ namespace WorkWithFiles
                         return pageCount;
 
                     case ConsoleKey.F10:
-                        SelectFiles();
-                        isSelected = true;
-                        return currentPage; // Остаемся на текущей странице после выделения
+                        if (isSelected == false) { SelectFiles(); return currentPage; }
+                        if (isSelected == true) { UnSelectFiles(); return currentPage; }
+                        return currentPage;
                 }
-            }
-        }
-
-        private string FormatFileSize(long bytes)
-        {
-            string[] suffixes = { "B", "KB", "MB", "GB", "TB" };
-            int counter = 0;
-            decimal number = (decimal)bytes;
-            while (Math.Round(number / 1024) >= 1)
-            {
-                number /= 1024;
-                counter++;
             }
             return string.Format("{0:n1}{1}", number, suffixes[counter]);
         }
