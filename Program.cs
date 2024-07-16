@@ -111,6 +111,11 @@
                                     historyIndex++;
                                     history[0] = new DirectoryState(currentPath, selectedIndex, scrollOffset);
                                 }
+                                if (historyIndex < 0)
+                                {
+                                    historyIndex++;
+                                    history[0] = new DirectoryState(currentPath, selectedIndex, scrollOffset);
+                                }
                                 currentPath = newPath;
                                 previosIndex = selectedIndex;
                                 selectedIndex = 0;
