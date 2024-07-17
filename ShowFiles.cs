@@ -38,7 +38,9 @@
                     selectedDirSize += files[i].Length;
                 }
                 else
+                {
                     showFiles[i, 1] = "false";
+                }
             }
 
             isSelected = true;
@@ -74,7 +76,7 @@
             int startIndex = page * FilesPerPage;
             int endIndex = Math.Min(startIndex + FilesPerPage, showFiles.GetLength(0));
             int currentPageLines = (int)Math.Ceiling((double)(endIndex - startIndex) / 3);
-            int maxPageLines = 24;
+            const int maxPageLines = 24;
 
             for (int i = startIndex; i < endIndex; i += 3)
             {
@@ -85,26 +87,35 @@
                 Console.WriteLine($"{col1}{col2}{col3}");
             }
             if (currentPageLines < maxPageLines)
+            {
                 for (int i = 0; i < maxPageLines - currentPageLines; i++)
                 {
                     Console.WriteLine();
                 }
+            }
+
             Console.WriteLine($"Директория содерит {showFiles.GetLength(0)} файлов. {dirSize}");
             if (isSelected)
             {
-                Console.WriteLine($"Выбрано: {countselected} файлов объемом {selectedDirSize} байт");
+                Console.WriteLine(
+                    $"Выбрано: {countselected} файлов объемом {selectedDirSize} байт"
+                );
             }
             else
             {
                 Console.WriteLine();
             }
-            Console.WriteLine($"Страница {page + 1} из {(showFiles.GetLength(0) + FilesPerPage - 1) / FilesPerPage}");
+            Console.WriteLine(
+                $"Страница {page + 1} из {(showFiles.GetLength(0) + FilesPerPage - 1) / FilesPerPage}"
+            );
             Console.WriteLine("Используйте стрелки для навигации, Backspace для возврата");
 
-            Console.WriteLine("\u001b[47m\u001b[30mF10 - выделить/снять выделение, файлы которые не использовались более 30 минут\u001b[0m");
+            Console.WriteLine(
+                "\u001b[47m\u001b[30mF10 - выделить/снять выделение, файлы которые не использовались более 30 минут\u001b[0m"
+            );
         }
 
-        private string GetFormattedFileName(string[,] showFiles, int index)
+        private static string GetFormattedFileName(string[,] showFiles, int index)
         {
             if (index < showFiles.GetLength(0))
             {
@@ -113,7 +124,7 @@
 
                 if (fileName.Length > MaxFileNameLength)
                 {
-                    fileName = fileName.Substring(0, MaxFileNameLength - 1) + "~";
+                    fileName = $"{fileName.AsSpan(0, MaxFileNameLength - 1)}~";
                 }
 
                 string formattedName = fileName.PadRight(ColumnWidth);
@@ -147,8 +158,16 @@
                         return pageCount;
 
                     case ConsoleKey.F10:
-                        if (isSelected == false) { SelectFiles(); return currentPage; }
-                        if (isSelected == true) { UnSelectFiles(); return currentPage; }
+                        if (!isSelected)
+                        {
+                            SelectFiles();
+                            return currentPage;
+                        }
+                        if (isSelected)
+                        {
+                            UnSelectFiles();
+                            return currentPage;
+                        }
                         return currentPage;
                 }
             }

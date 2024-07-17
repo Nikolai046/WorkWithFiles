@@ -1,18 +1,18 @@
 ﻿namespace WorkWithFiles
 {
-    internal class Program
+    internal static class Program
     {
         private const int MaxDisplayLines = 20;
         private const int MaxHistorySize = 2;
-        private static DirectoryState[] history = new DirectoryState[MaxHistorySize];
+        private static readonly DirectoryState[] history = new DirectoryState[MaxHistorySize];
         private static int historyIndex = -1;
 
-        private static void Main(string[] args)
+        private static void Main()
         {
             string currentPath = $"{Directory.GetCurrentDirectory()}";
 
-            DirectoryDrawer drawer = new DirectoryDrawer(MaxDisplayLines);
-            DirectoryState currentState = new(currentPath, 0, 0);
+            DirectoryDrawer drawer = new(MaxDisplayLines);
+            _ = new DirectoryState(currentPath, 0, 0);
             bool needSizeCalculated = true;
             int selectedIndex = 0;
             int previosIndex = 0;
@@ -52,19 +52,29 @@
                     {
                         try
                         {
-                            dirSize = ($"Общий размер: {new CalculateDirectorySize(currentPath).DirSize} байт");
+                            dirSize = (
+                                $"Общий размер: {new CalculateDirectorySize(currentPath).DirSize} байт"
+                            );
                             needSizeCalculated = false;
                         }
-                        catch (Exception ex)
+                        catch (Exception)
                         {
-                            dirSize = "Размер невозможно посчитать, т.к. нет доступа к одному из элементов";
+                            dirSize =
+                                "Размер невозможно посчитать, т.к. нет доступа к одному из элементов";
                             needSizeCalculated = false;
-                            if (!backward) selectedIndex = previosIndex;
+                            if (!backward)
+                                selectedIndex = previosIndex;
                         }
                     }
                     if (needRedraw)
                     {
-                        drawer.DrawInterface(currentPath, directories, selectedIndex, scrollOffset, dirSize);
+                        drawer.DrawInterface(
+                            currentPath,
+                            directories,
+                            selectedIndex,
+                            scrollOffset,
+                            dirSize
+                        );
                         needRedraw = false;
                     }
 
@@ -102,12 +112,20 @@
                                 }
                                 if (historyIndex >= 0)
                                 {
-                                    history[historyIndex] = new DirectoryState(currentPath, selectedIndex, scrollOffset);
+                                    history[historyIndex] = new DirectoryState(
+                                        currentPath,
+                                        selectedIndex,
+                                        scrollOffset
+                                    );
                                 }
                                 if (historyIndex < 0)
                                 {
                                     historyIndex++;
-                                    history[0] = new DirectoryState(currentPath, selectedIndex, scrollOffset);
+                                    history[0] = new DirectoryState(
+                                        currentPath,
+                                        selectedIndex,
+                                        scrollOffset
+                                    );
                                 }
                                 currentPath = newPath;
                                 previosIndex = selectedIndex;
@@ -133,7 +151,8 @@
                                 }
                                 else
                                 {
-                                    currentPath = Directory.GetParent(currentPath)?.FullName ?? currentPath;
+                                    currentPath =
+                                        Directory.GetParent(currentPath)?.FullName ?? currentPath;
                                     selectedIndex = 0;
                                     scrollOffset = 0;
                                 }
@@ -143,7 +162,8 @@
                             }
                             else
                             {
-                                currentPath = Directory.GetParent(currentPath)?.FullName ?? currentPath;
+                                currentPath =
+                                    Directory.GetParent(currentPath)?.FullName ?? currentPath;
                                 selectedIndex = 0;
                                 scrollOffset = 0;
                             }
@@ -154,7 +174,7 @@
                             return;
 
                         case ConsoleKey.F1:
-                            ShowFiles showFiles = new ShowFiles(currentPath, dirSize);
+                            _ = new ShowFiles(currentPath, dirSize);
                             goto Exit;
                     }
                 }
